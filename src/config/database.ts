@@ -1,14 +1,16 @@
-import mongoose from 'mongoose';
+import mongoose, { ConnectOptions } from 'mongoose';
 import { environment } from './environment';
 
 export const connectDatabase = async () => {
     try {
-        const options = {
+        const options: ConnectOptions = {
             autoIndex: true, // Build indexes
             maxPoolSize: 10, // Maintain up to 10 socket connections
             serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
             socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-            family: 4 // Use IPv4, skip trying IPv6
+            family: 4, // Use IPv4, skip trying IPv6
+            retryWrites: true,
+            w: 'majority'
         };
 
         await mongoose.connect(environment.mongoUri, options);
@@ -28,6 +30,6 @@ export const connectDatabase = async () => {
 
     } catch (error) {
         console.error('Error connecting to MongoDB:', error);
-        process.exit(1);
+        throw error; // Let the application handle the error
     }
 }; 
